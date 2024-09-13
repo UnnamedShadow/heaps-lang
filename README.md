@@ -1,2 +1,2 @@
-# hap
-hardware agnostic parallelization (rust-lang)
+# HEAPS-LANG
+## Harware Elegant & Agnostic Parallel LANGuage
