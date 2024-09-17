@@ -14,7 +14,7 @@ fn gen_statement(statement: Statement) -> TokenStream {
         }
         Statement::Literal { content } => {
             let lit = proc_macro2::Literal::string(content.as_str());
-            quote::quote! {#lit}
+            quote::quote! {#lit.to_string()}
         }
     }
 }

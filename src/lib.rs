@@ -1,3 +1,5 @@
+#![feature(trait_alias)]
+
 use proc_macro::TokenStream;
 use quote::TokenStreamExt;
 
