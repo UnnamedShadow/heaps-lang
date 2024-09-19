@@ -39,7 +39,6 @@ pub fn gen_ts(function: Function, body: TokenStream) -> TokenStream {
         quote::quote! {
             trait #trait_name<#(#trimmed_args),*> {
                 type Output;
-                type Fn;
                 fn #name(&self, #(#trimmed_args),*) -> Self::Output;
             }
             impl <#(#args),*> #trait_name<#(#trimmed_args),*> for #first_arg
@@ -48,7 +47,6 @@ pub fn gen_ts(function: Function, body: TokenStream) -> TokenStream {
                 #in_types
             {
                 type Output = #out_type;
-                type Fn = fn(#(#args),*) -> Self::Output;
                 fn #name(&self, #(#trimmed_args),*) -> Self::Output {
                     let #first_arg = self.clone();
                     #body

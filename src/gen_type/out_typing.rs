@@ -3,11 +3,9 @@ use std::collections::HashSet;
 use proc_macro2::TokenStream;
 
 use crate::{
-    gen_type::gen_out_name,
+    gen_type::{gen_out_name, gen_trait_name},
     sparse::{Function, Statement},
 };
-
-use super::gen_trait_name;
 
 #[derive(Clone)]
 enum BasicTyping {
@@ -40,7 +38,8 @@ fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
             match new_function {
                 Typing::Normal(f) => Typing::FunctionCalls(f, new_args.collect()),
                 Typing::FunctionCalls(f, a) => {
-                    Typing::FunctionCalls(f, vec![a, new_args.collect()].concat())
+                    // Typing::FunctionCalls(f, vec![a, new_args.collect()].concat())
+                    todo!("higher order functions not supported yet")
                 }
             }
         }
@@ -51,16 +50,25 @@ fn ts(typing: Typing) -> TokenStream {
     match typing {
         Typing::Normal(BasicTyping::Normal(x)) => x,
         Typing::Normal(BasicTyping::Fn(x)) => {
-            todo!("sorry idk if ill implement it")
+            quote::quote! {#x}
         }
         Typing::FunctionCalls(f, args) => {
-            let args_ts = args.iter().map(|x| ts(*x.clone()));
+            let mut args_ts: Vec<_> = args.iter().map(|x| ts(*x.clone())).collect();
             match f {
-                BasicTyping::Fn(x) => {
-                    let fun = gen_out_name(x);
-                    quote::quote! {#fun<#(#args_ts),*>}
+                BasicTyping::Normal(x) => {
+                    todo!("higher order functions not supported yet")
                 }
-                BasicTyping::Normal(x) => quote::quote! {#x<#(#args_ts),*>},
+                BasicTyping::Fn(x) => {
+                    if args.is_empty() {
+                        let out_name = gen_out_name(x.clone());
+                        quote::quote! {#out_name}
+                    } else {
+                        let trait_name = gen_trait_name(x.clone());
+                        let first_arg = args_ts.first();
+                        let args_rest = args_ts[1..].to_vec();
+                        quote::quote! {<#first_arg as #trait_name<#(#args_rest),*>>::Output}
+                    }
+                }
             }
         }
     }
