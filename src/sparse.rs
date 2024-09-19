@@ -41,16 +41,20 @@ fn parse_statement(data: Vec<TokenTree>) -> Statement {
         _ => match data.last().unwrap() {
             TokenTree::Group(group) => {
                 let mut args = vec![];
-                let mut last = vec![];
+                let mut last = None;
                 for t in group.stream() {
                     if t.to_string() == "," {
-                        args.push(last);
-                        last = vec![];
+                        args.push(last.unwrap());
+                        last = Some(vec![]);
                     } else {
-                        last.push(t);
+                        last = last.map_or(Some(vec![t.clone()]), |l| {
+                            let mut a = l;
+                            a.push(t);
+                            Some(a)
+                        });
                     }
                 }
-                args.push(last);
+                last.map(|x| args.push(x));
                 Statement::FunctionCall {
                     function: Box::new(parse_statement(data[0..data.len() - 1].to_vec())),
                     args: args

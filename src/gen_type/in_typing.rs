@@ -25,10 +25,12 @@ struct TraitTyping {
 fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
     match statement {
         Statement::None => Typing::None,
-        Statement::Literal { content } => Typing::Static(quote::quote! {String}),
+        Statement::Literal { .. } => Typing::Static(quote::quote! {String}),
         Statement::VarUsage { name } => {
             if args_set.contains(&name) {
-                Typing::Static(quote::quote! {#name})
+                let name_ident =
+                    proc_macro2::Ident::new(name.as_str(), proc_macro2::Span::call_site());
+                Typing::Static(quote::quote! {#name_ident})
             } else {
                 todo!("higher order functions not supported yet")
             }
@@ -40,13 +42,17 @@ fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
                 .collect();
             match *function {
                 Statement::None => panic!("function call to None"),
-                Statement::Literal { content } => panic!("can't call a literal"),
+                Statement::Literal { .. } => panic!("can't call a literal"),
                 Statement::VarUsage { name } => {
                     if args_set.contains(&name) {
                         todo!("higher order functions not supported yet")
                     } else if new_args.is_empty() {
                         let out_name = gen_out_name(name.clone());
-                        Typing::Static(quote::quote! {#out_name})
+                        let out_name_ident = proc_macro2::Ident::new(
+                            out_name.as_str(),
+                            proc_macro2::Span::call_site(),
+                        );
+                        Typing::Static(quote::quote! {#out_name_ident})
                     } else {
                         let trait_name = gen_trait_name(name.clone());
                         Typing::Trait(Box::new(TraitTyping {
@@ -56,7 +62,7 @@ fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
                         }))
                     }
                 }
-                Statement::FunctionCall { function, args } => {
+                Statement::FunctionCall { .. } => {
                     todo!("higher order functions not supported yet")
                 }
             }
@@ -70,7 +76,8 @@ fn ts(typing: Typing, acc: &mut TokenStream) -> TokenStream {
         Typing::Static(token_stream) => token_stream,
         Typing::Trait(trait_typing) => {
             let self_type = ts(trait_typing.self_type, acc);
-            let trait_name = trait_typing.name;
+            let trait_name =
+                proc_macro2::Ident::new(trait_typing.name.as_str(), proc_macro2::Span::call_site());
             let types: Vec<_> = trait_typing
                 .types
                 .iter()

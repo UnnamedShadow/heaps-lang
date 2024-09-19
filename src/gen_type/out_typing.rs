@@ -22,10 +22,12 @@ enum Typing {
 fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
     match statement {
         Statement::None => Typing::Normal(BasicTyping::Normal(quote::quote! {()})),
-        Statement::Literal { content } => Typing::Normal(BasicTyping::Normal(quote::quote! {&str})),
+        Statement::Literal { .. } => Typing::Normal(BasicTyping::Normal(quote::quote! {String})),
         Statement::VarUsage { name } => {
             if args_set.contains(&name) {
-                Typing::Normal(BasicTyping::Normal(quote::quote! {#name}))
+                let name_ident =
+                    proc_macro2::Ident::new(name.as_str(), proc_macro2::Span::call_site());
+                Typing::Normal(BasicTyping::Normal(quote::quote! {#name_ident}))
             } else {
                 Typing::Normal(BasicTyping::Fn(name))
             }
@@ -37,7 +39,7 @@ fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
                 .map(|x| Box::new(typing(*(x.clone()), args_set.clone())));
             match new_function {
                 Typing::Normal(f) => Typing::FunctionCalls(f, new_args.collect()),
-                Typing::FunctionCalls(f, a) => {
+                Typing::FunctionCalls(..) => {
                     // Typing::FunctionCalls(f, vec![a, new_args.collect()].concat())
                     todo!("higher order functions not supported yet")
                 }
@@ -50,20 +52,27 @@ fn ts(typing: Typing) -> TokenStream {
     match typing {
         Typing::Normal(BasicTyping::Normal(x)) => x,
         Typing::Normal(BasicTyping::Fn(x)) => {
-            quote::quote! {#x}
+            let x_ident = proc_macro2::Ident::new(x.as_str(), proc_macro2::Span::call_site());
+            quote::quote! {#x_ident}
         }
         Typing::FunctionCalls(f, args) => {
-            let mut args_ts: Vec<_> = args.iter().map(|x| ts(*x.clone())).collect();
+            let args_ts: Vec<_> = args.iter().map(|x| ts(*x.clone())).collect();
             match f {
-                BasicTyping::Normal(x) => {
+                BasicTyping::Normal(..) => {
                     todo!("higher order functions not supported yet")
                 }
                 BasicTyping::Fn(x) => {
                     if args.is_empty() {
-                        let out_name = gen_out_name(x.clone());
+                        let out_name = proc_macro2::Ident::new(
+                            gen_out_name(x.clone()).as_str(),
+                            proc_macro2::Span::call_site(),
+                        );
                         quote::quote! {#out_name}
                     } else {
-                        let trait_name = gen_trait_name(x.clone());
+                        let trait_name = proc_macro2::Ident::new(
+                            gen_trait_name(x.clone()).as_str(),
+                            proc_macro2::Span::call_site(),
+                        );
                         let first_arg = args_ts.first();
                         let args_rest = args_ts[1..].to_vec();
                         quote::quote! {<#first_arg as #trait_name<#(#args_rest),*>>::Output}

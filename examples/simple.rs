@@ -1,14 +1,36 @@
+trait addTrait<T> {
+    type Output;
+    fn add(&self, rhs: T) -> Self::Output;
+}
+impl addTrait<String> for String {
+    type Output = String;
+    fn add(&self, rhs: String) -> Self::Output {
+        format!("{}{}", self, rhs).to_string()
+    }
+}
+
+trait printTrait {
+    type Output;
+    fn print(&self) -> Self::Output;
+}
+impl printTrait for String {
+    type Output = ();
+    fn print(&self) -> Self::Output {
+        println!("{}", self);
+    }
+}
+
 heaps_lang::heaps_sync! {
-    f1(a, b) < {
+    fa(a b) < {
         add(a, b)
     }
-    f2(a) < {
-        f1(a, "world")
+    fb(a) < {
+        fa(a, "world")
     }
-    f3() < {
-        f2("hello ")
+    fc() < {
+        fb("hello ")
     }
     main() < {
-        print(f3());
+        print(fc());
     }
 }

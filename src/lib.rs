@@ -1,17 +1,16 @@
-#![feature(trait_alias)]
-
 use proc_macro::TokenStream;
 use quote::TokenStreamExt;
+use sparse::sparse;
 
 mod gen_body_sync;
 mod gen_type;
 mod sparse;
 mod types;
-mod types_test;
+// mod types_test;
 
 #[proc_macro]
 pub fn heaps_sync(input: TokenStream) -> TokenStream {
-    let functions = sparse::sparse(input);
+    let functions = sparse(input);
     let mut ts = proc_macro2::TokenStream::new();
     for function in functions {
         ts.append_all(gen_type::gen_ts(
@@ -19,5 +18,6 @@ pub fn heaps_sync(input: TokenStream) -> TokenStream {
             gen_body_sync::gen_ts(function),
         ));
     }
+    println!("{}", ts.to_string());
     ts.into()
 }
