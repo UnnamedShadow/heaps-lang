@@ -12,7 +12,7 @@ fn gen_statement(statement: &Statement) -> TokenStream {
         }
         Statement::FunctionCall { function, args } => {
             let new_function = gen_statement(function);
-            let mut new_args = args.iter().map(|x| gen_statement(x));
+            let mut new_args = args.iter().map(gen_statement);
             if let Some(first_arg) = new_args.next() {
                 quote::quote! {#first_arg.#new_function(#(#new_args),*)}
             } else {
@@ -28,7 +28,7 @@ fn gen_statement(statement: &Statement) -> TokenStream {
 pub fn gen_ts(function: &Function) -> TokenStream {
     let mut ts = TokenStream::new();
     function.body.iter().for_each(|line| {
-        let line_ts = gen_statement(&line);
+        let line_ts = gen_statement(line);
         ts.append_all(quote::quote! {; #line_ts});
     });
     ts

@@ -7,7 +7,7 @@ pub enum Statement {
     },
     FunctionCall {
         function: Box<Statement>,
-        args: Vec<Box<Statement>>,
+        args: Vec<Statement>,
     },
     None,
     Literal {
@@ -24,7 +24,7 @@ pub struct Function {
 
 fn parse_statement(data: Vec<TokenTree>) -> Statement {
     match data.len() {
-        0 => return Statement::None,
+        0 => Statement::None,
         1 => match data[0].clone() {
             TokenTree::Literal(lit) => {
                 let s = lit.to_string();
@@ -57,10 +57,7 @@ fn parse_statement(data: Vec<TokenTree>) -> Statement {
                 last.map(|x| args.push(x));
                 Statement::FunctionCall {
                     function: Box::new(parse_statement(data[0..data.len() - 1].to_vec())),
-                    args: args
-                        .iter()
-                        .map(|x| Box::new(parse_statement(x.clone())))
-                        .collect(),
+                    args: args.iter().map(|x| parse_statement(x.clone())).collect(),
                 }
             }
             _ => panic!("invalid statement"),

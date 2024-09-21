@@ -36,7 +36,7 @@ fn typing(statement: Statement, args_set: &HashSet<String>) -> Typing {
             }
         }
         Statement::FunctionCall { function, args } => {
-            let new_args: Vec<_> = args.iter().map(|x| typing(*x.clone(), args_set)).collect();
+            let new_args: Vec<_> = args.iter().map(|x| typing(x.clone(), args_set)).collect();
             match *function {
                 Statement::None => panic!("function call to None"),
                 Statement::Literal { .. } => panic!("can't call a literal"),

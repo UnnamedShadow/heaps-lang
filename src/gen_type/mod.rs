@@ -23,7 +23,6 @@ pub fn gen_ts(function: &Function, body: TokenStream) -> TokenStream {
         .trim_start_matches('(')
         .trim_end_matches(')')
         .to_string();
-    let args = args;
     let out_type = out_typing::gen_typing(function.clone());
     let name_ident = proc_macro2::Ident::new(name.as_str(), proc_macro2::Span::call_site());
     if args.is_empty() {

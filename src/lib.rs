@@ -13,6 +13,6 @@ pub fn heaps_sync(input: TokenStream) -> TokenStream {
         let body = gen_body_sync::gen_ts(&function);
         ts.append_all(gen_type::gen_ts(&function, body));
     }
-    println!("{}", ts.to_string());
+    println!("{}", ts);
     ts.into()
 }

@@ -16,7 +16,7 @@ enum BasicTyping {
 #[derive(Clone)]
 enum Typing {
     Normal(BasicTyping),
-    FunctionCalls(BasicTyping, Vec<Box<Typing>>),
+    FunctionCalls(BasicTyping, Vec<Typing>),
 }
 
 fn typing(statement: Statement, args_set: &HashSet<String>) -> Typing {
@@ -34,9 +34,7 @@ fn typing(statement: Statement, args_set: &HashSet<String>) -> Typing {
         }
         Statement::FunctionCall { function, args } => {
             let new_function = typing(*function, args_set);
-            let new_args = args
-                .iter()
-                .map(|x| Box::new(typing(*(x.clone()), args_set)));
+            let new_args = args.iter().map(|x| typing(x.clone(), args_set));
             match new_function {
                 Typing::Normal(f) => Typing::FunctionCalls(f, new_args.collect()),
                 Typing::FunctionCalls(..) => {
@@ -56,7 +54,7 @@ fn ts(typing: Typing) -> TokenStream {
             quote::quote! {#x_ident}
         }
         Typing::FunctionCalls(f, args) => {
-            let args_ts: Vec<_> = args.iter().map(|x| ts(*x.clone())).collect();
+            let args_ts: Vec<_> = args.iter().map(|x| ts(x.clone())).collect();
             match f {
                 BasicTyping::Normal(..) => {
                     todo!("higher order functions not supported yet")
