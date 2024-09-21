@@ -4,6 +4,7 @@ use quote::TokenStreamExt;
 mod gen_body_sync;
 mod gen_type;
 mod sparse;
+mod util;
 
 #[proc_macro]
 pub fn heaps_sync(input: TokenStream) -> TokenStream {

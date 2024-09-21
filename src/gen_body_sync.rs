@@ -1,13 +1,16 @@
 use proc_macro2::TokenStream;
 use quote::TokenStreamExt;
 
-use crate::sparse::{Function, Statement};
+use crate::{
+    sparse::{Function, Statement},
+    util::new_ident,
+};
 
 fn gen_statement(statement: &Statement) -> TokenStream {
     match statement {
         Statement::None => quote::quote! {},
         Statement::VarUsage { name } => {
-            let name_ident = proc_macro2::Ident::new(name.as_str(), proc_macro2::Span::call_site());
+            let name_ident = new_ident(name);
             quote::quote! {#name_ident}
         }
         Statement::FunctionCall { function, args } => {

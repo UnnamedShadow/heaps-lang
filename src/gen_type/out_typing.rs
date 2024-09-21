@@ -5,6 +5,7 @@ use proc_macro2::TokenStream;
 use crate::{
     gen_type::{gen_out_name, gen_trait_name},
     sparse::{Function, Statement},
+    util::new_ident,
 };
 
 #[derive(Clone)]
@@ -25,8 +26,7 @@ fn typing(statement: Statement, args_set: &HashSet<String>) -> Typing {
         Statement::Literal { .. } => Typing::Normal(BasicTyping::Normal(quote::quote! {String})),
         Statement::VarUsage { name } => {
             if args_set.contains(&name) {
-                let name_ident =
-                    proc_macro2::Ident::new(name.as_str(), proc_macro2::Span::call_site());
+                let name_ident = new_ident(&name);
                 Typing::Normal(BasicTyping::Normal(quote::quote! {#name_ident}))
             } else {
                 Typing::Normal(BasicTyping::Fn(name))
@@ -50,7 +50,7 @@ fn ts(typing: Typing) -> TokenStream {
     match typing {
         Typing::Normal(BasicTyping::Normal(x)) => x,
         Typing::Normal(BasicTyping::Fn(x)) => {
-            let x_ident = proc_macro2::Ident::new(x.as_str(), proc_macro2::Span::call_site());
+            let x_ident = new_ident(&x);
             quote::quote! {#x_ident}
         }
         Typing::FunctionCalls(f, args) => {
@@ -61,16 +61,10 @@ fn ts(typing: Typing) -> TokenStream {
                 }
                 BasicTyping::Fn(x) => {
                     if args.is_empty() {
-                        let out_name = proc_macro2::Ident::new(
-                            gen_out_name(x).as_str(),
-                            proc_macro2::Span::call_site(),
-                        );
+                        let out_name = new_ident(&gen_out_name(x));
                         quote::quote! {#out_name}
                     } else {
-                        let trait_name = proc_macro2::Ident::new(
-                            gen_trait_name(x).as_str(),
-                            proc_macro2::Span::call_site(),
-                        );
+                        let trait_name = new_ident(&gen_trait_name(x));
                         let first_arg = args_ts.first();
                         let args_rest = args_ts[1..].to_vec();
                         quote::quote! {<#first_arg as #trait_name<#(#args_rest),*>>::Output}
