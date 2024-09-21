@@ -3,7 +3,7 @@ use quote::TokenStreamExt;
 
 use crate::sparse::{Function, Statement};
 
-fn gen_statement(statement: Statement) -> TokenStream {
+fn gen_statement(statement: &Statement) -> TokenStream {
     match statement {
         Statement::None => quote::quote! {},
         Statement::VarUsage { name } => {
@@ -11,10 +11,9 @@ fn gen_statement(statement: Statement) -> TokenStream {
             quote::quote! {#name_ident}
         }
         Statement::FunctionCall { function, args } => {
-            let new_function = gen_statement(*function);
-            let mut new_args = args.iter().map(|x| gen_statement(*x.clone()));
+            let new_function = gen_statement(function);
+            let mut new_args = args.iter().map(|x| gen_statement(x));
             if let Some(first_arg) = new_args.next() {
-                dbg!(first_arg.clone());
                 quote::quote! {#first_arg.#new_function(#(#new_args),*)}
             } else {
                 quote::quote! {#new_function()}
@@ -26,11 +25,11 @@ fn gen_statement(statement: Statement) -> TokenStream {
     }
 }
 
-pub fn gen_ts(function: Function) -> TokenStream {
+pub fn gen_ts(function: &Function) -> TokenStream {
     let mut ts = TokenStream::new();
-    for line in function.body {
-        let line_ts = gen_statement(line);
-        ts.append_all(quote::quote! {; #line_ts})
-    }
+    function.body.iter().for_each(|line| {
+        let line_ts = gen_statement(&line);
+        ts.append_all(quote::quote! {; #line_ts});
+    });
     ts
 }

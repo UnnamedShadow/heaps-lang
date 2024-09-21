@@ -21,16 +21,58 @@ impl printTrait for String {
 }
 
 heaps_lang::heaps_sync! {
-    fa(a b) < {
+    fa(a b) = {
         add(a, b)
     }
-    fb(a) < {
+    fb(a) = {
         fa(a, "world")
     }
-    fc() < {
+    fc() = {
         fb("hello ")
     }
-    main() < {
+    main() = {
         print(fc());
     }
 }
+// should expand to:
+// trait faTrait<b> {
+//     type Output;
+//     fn fa(&self, b: b) -> Self::Output;
+// }
+// impl<a, b> faTrait<b> for a
+// where
+//     Self: Clone,
+//     a: addTrait<b>,
+// {
+//     type Output = <a as addTrait<b>>::Output;
+//     fn fa(&self, b: b) -> Self::Output {
+//         let a = self.clone();
+//         a.add(b)
+//     }
+// }
+
+// trait fbTrait {
+//     type Output;
+//     fn fb(&self) -> Self::Output;
+// }
+// impl<a> fbTrait for a
+// where
+//     Self: Clone,
+//     a: faTrait<String>,
+// {
+//     type Output = <a as faTrait<String>>::Output;
+//     fn fb(&self) -> Self::Output {
+//         let a = self.clone();
+//         a.fa("world".to_string())
+//     }
+// }
+
+// type fcOutput = <String as fbTrait>::Output;
+// fn fc() -> fcOutput {
+//     "hello ".to_string().fb()
+// }
+
+// type mainOutput = ();
+// fn main() -> mainOutput {
+//     fc().print();
+// }

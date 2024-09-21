@@ -90,6 +90,9 @@ pub fn sparse(input: TokenStream) -> Vec<Function> {
     for token in input {
         last.push(token);
         if last.len() == 4 {
+            if last[2].to_string() != "=" {
+                panic!("the third token should be an '='")
+            }
             match last[1].clone() {
                 TokenTree::Group(args) => match last[3].clone() {
                     TokenTree::Group(body) => functions.push(Function {

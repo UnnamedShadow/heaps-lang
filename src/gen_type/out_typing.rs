@@ -19,7 +19,7 @@ enum Typing {
     FunctionCalls(BasicTyping, Vec<Box<Typing>>),
 }
 
-fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
+fn typing(statement: Statement, args_set: &HashSet<String>) -> Typing {
     match statement {
         Statement::None => Typing::Normal(BasicTyping::Normal(quote::quote! {()})),
         Statement::Literal { .. } => Typing::Normal(BasicTyping::Normal(quote::quote! {String})),
@@ -33,10 +33,10 @@ fn typing(statement: Statement, args_set: HashSet<String>) -> Typing {
             }
         }
         Statement::FunctionCall { function, args } => {
-            let new_function = typing(*function, args_set.clone());
+            let new_function = typing(*function, args_set);
             let new_args = args
                 .iter()
-                .map(|x| Box::new(typing(*(x.clone()), args_set.clone())));
+                .map(|x| Box::new(typing(*(x.clone()), args_set)));
             match new_function {
                 Typing::Normal(f) => Typing::FunctionCalls(f, new_args.collect()),
                 Typing::FunctionCalls(..) => {
@@ -64,13 +64,13 @@ fn ts(typing: Typing) -> TokenStream {
                 BasicTyping::Fn(x) => {
                     if args.is_empty() {
                         let out_name = proc_macro2::Ident::new(
-                            gen_out_name(x.clone()).as_str(),
+                            gen_out_name(x).as_str(),
                             proc_macro2::Span::call_site(),
                         );
                         quote::quote! {#out_name}
                     } else {
                         let trait_name = proc_macro2::Ident::new(
-                            gen_trait_name(x.clone()).as_str(),
+                            gen_trait_name(x).as_str(),
                             proc_macro2::Span::call_site(),
                         );
                         let first_arg = args_ts.first();
@@ -85,6 +85,6 @@ fn ts(typing: Typing) -> TokenStream {
 
 pub fn gen_typing(function: Function) -> TokenStream {
     let args_set: HashSet<String> = function.args.iter().cloned().collect();
-    let res = typing(function.body.last().unwrap().clone(), args_set);
+    let res = typing(function.body.last().unwrap().clone(), &args_set);
     ts(res)
 }
