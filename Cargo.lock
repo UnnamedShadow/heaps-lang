@@ -61,11 +61,17 @@ checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
 name = "heaps-lang"
 version = "0.1.0"
 dependencies = [
+ "heaps-std",
  "memoize",
  "proc-macro2",
  "quote",
  "trybuild",
 ]
+
+[[package]]
+name = "heaps-std"
+version = "0.1.0"
+source = "git+https://github.com/UnnamedShadow/heaps-std.git#e6f0a7dfa33e2c4096b885ca50f38bf319790f68"
 
 [[package]]
 name = "indexmap"
