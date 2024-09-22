@@ -23,7 +23,7 @@ fn gen_statement(statement: &Statement) -> TokenStream {
             }
         }
         Statement::Literal { content } => {
-            quote::quote! {#content.to_string()}
+            quote::quote! {heaps_std::str::Str(#content.to_string())}
         }
     }
 }

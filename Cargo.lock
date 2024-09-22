@@ -71,7 +71,7 @@ dependencies = [
 [[package]]
 name = "heaps-std"
 version = "0.1.0"
-source = "git+https://github.com/UnnamedShadow/heaps-std.git#e6f0a7dfa33e2c4096b885ca50f38bf319790f68"
+source = "git+https://github.com/UnnamedShadow/heaps-std.git#a4ff899f5aaa80d624283aedfbbcfd7419dd5b75"
 
 [[package]]
 name = "indexmap"

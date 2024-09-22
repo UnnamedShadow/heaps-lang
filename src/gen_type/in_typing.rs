@@ -28,7 +28,7 @@ struct TraitTyping {
 fn typing(statement: Statement, args_set: &HashSet<String>) -> Typing {
     match statement {
         Statement::None => Typing::None,
-        Statement::Literal { .. } => Typing::Static(quote::quote! {String}),
+        Statement::Literal { .. } => Typing::Static(quote::quote! {heaps_std::str::Str}),
         Statement::VarUsage { name } => {
             if args_set.contains(&name) {
                 let name_ident = new_ident(&name); // Don't inline vars like this one
