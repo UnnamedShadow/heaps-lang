@@ -40,10 +40,13 @@ fn gen_statement_ts(
                 .iter()
                 .map(|x| gen_statement_ts(x.clone(), acc, args_set))
                 .collect();
-            let first_arg = new_args.first();
-            let args_rest = new_args[1..].to_vec();
-            acc.append_all(quote::quote! {#first_arg: #new_function<#(#args_rest),*>,});
-            quote::quote! {<#first_arg as #new_function<#(#args_rest),*>>::Output}
+            if let Some(first_arg) = new_args.first() {
+                let args_rest = new_args[1..].to_vec();
+                acc.append_all(quote::quote! {#first_arg: #new_function<#(#args_rest),*>,});
+                quote::quote! {<#first_arg as #new_function<#(#args_rest),*>>::Output}
+            } else {
+                quote::quote! {#new_function::Output}
+            }
         }
     }
 }
@@ -84,16 +87,15 @@ pub fn gen_ts(function: &Function, body_ts: TokenStream) -> TokenStream {
         quote::quote! {
             trait #trait_name_ident<#(#trimmed_args),*> {
                 type Output;
-                fn #name_ident(&self, #(#trimmed_args: #trimmed_args),*) -> Self::Output;
+                fn #name_ident(self, #(#trimmed_args: #trimmed_args),*) -> Self::Output;
             }
             impl <#(#args_ident),*> #trait_name_ident<#(#trimmed_args),*> for #first_arg
             where
-                Self: Clone,
                 #in_types
             {
                 type Output = #out_type;
-                fn #name_ident(&self, #(#trimmed_args: #trimmed_args),*) -> Self::Output {
-                    let #first_arg = self.clone()
+                fn #name_ident(self, #(#trimmed_args: #trimmed_args),*) -> Self::Output {
+                    let #first_arg = self
                     #body_ts
                 }
             }

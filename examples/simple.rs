@@ -17,41 +17,36 @@ heaps_lang::heaps_sync! {
 // should expand to:
 // trait faTrait<b> {
 //     type Output;
-//     fn fa(&self, b: b) -> Self::Output;
+//     fn fa(self, b: b) -> Self::Output;
 // }
 // impl<a, b> faTrait<b> for a
 // where
-//     Self: Clone,
 //     a: addTrait<b>,
 // {
 //     type Output = <a as addTrait<b>>::Output;
-//     fn fa(&self, b: b) -> Self::Output {
-//         let a = self.clone();
+//     fn fa(self, b: b) -> Self::Output {
+//         let a = self;
 //         a.add(b)
 //     }
 // }
-
 // trait fbTrait {
 //     type Output;
-//     fn fb(&self) -> Self::Output;
+//     fn fb(self) -> Self::Output;
 // }
 // impl<a> fbTrait for a
 // where
-//     Self: Clone,
-//     a: faTrait<String>,
+//     a: faTrait<heaps_std::str::Str>,
 // {
-//     type Output = <a as faTrait<String>>::Output;
-//     fn fb(&self) -> Self::Output {
-//         let a = self.clone();
-//         a.fa("world".to_string())
+//     type Output = <a as faTrait<heaps_std::str::Str>>::Output;
+//     fn fb(self) -> Self::Output {
+//         let a = self;
+//         a.fa(heaps_std::str::Str("world".to_string()))
 //     }
 // }
-
-// type fcOutput = <String as fbTrait>::Output;
+// type fcOutput = <heaps_std::str::Str as fbTrait>::Output;
 // fn fc() -> fcOutput {
-//     "hello ".to_string().fb()
+//     heaps_std::str::Str("hello ".to_string()).fb()
 // }
-
 // type mainOutput = ();
 // fn main() -> mainOutput {
 //     fc().print();
